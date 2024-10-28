@@ -9,6 +9,10 @@ def minimal_task():
     weather_info = fetch_weather_data_from_weatherInstitute(location, 1)
     print(weather_info)
 
+def getLocationsFromExcel(excelFileName:str):
+    locations = []
+    return locations
+
 def fetch_weather_data_from_weatherInstitute(location: str, retries: int):
     """This fetches function fetches data from the finnish weatherinstitutes API"""
 
