@@ -5,6 +5,7 @@ import datetime
 import json
 import os
 from dotenv import load_dotenv
+from weather_bot import send_weather_email, log_email_send
 
 # Load environment variables from .env file
 load_dotenv()
@@ -211,19 +212,35 @@ def get_weather_data(city, api_key):
 
 @task
 def weather_task():
-    print("Starting weather task...")  # Logging start
-    city = "Helsinki"  # Change to the desired city
-    api_key = os.getenv("OPENWEATHER_API_KEY")  # Store your API key in an environment variable
+    print("Starting weather task...")
 
-    # Debugging output to check if the API key is loaded
-    print(f"Loaded API Key: {api_key}")  # This will show the API key or None
+    # Your settings
+    city = "Helsinki"
+    api_key = os.getenv("OPENWEATHER_API_KEY")
+    recipient_emails = ["robin.salminen@student.laurea.fi"]
 
+    # Check if API key is set
     if api_key is None:
         print("Error: OPENWEATHER_API_KEY environment variable is not set.")
-    else:
-        print("API Key loaded successfully.")
-        weather_data = get_weather_data(city, api_key)
-        if weather_data:
-            print(json.dumps(weather_data, indent=4))
+        return
+
+    # Fetch data from OpenWeatherMap
+    openweather_data = get_weather_data(city, api_key)
+    
+    # Fetch data from the Finnish Weather Institute API
+    weather_institute_data = fetch_weather_data_from_weatherInstitute(city, retries=3)
+
+    if openweather_data and weather_institute_data:
+        # Combine the data from both sources
+        combined_weather_data = {
+            "OpenWeatherMap": openweather_data,
+            "Finnish Weather Institute": weather_institute_data
+        }
+
+        # Send email with combined data
+        if send_weather_email(combined_weather_data, recipient_emails):
+            print("Email sent and logged successfully.")  # Success message
         else:
-            print("Failed to retrieve weather data.")
+            print("Failed to send email.")  # Failure message
+    else:
+        print("Failed to retrieve weather data from one or both sources.")
