@@ -133,6 +133,9 @@ def weather_task():
 
     if openweather_data and weather_institute_data:
         # Combine the data from both sources
+        combined_weather_data = combine_weather_data(openweather_data, weather_institute_data)
+
+        # Combine the data from both sources
         combined_weather_data = {
             "OpenWeatherMap": openweather_data,
             "Finnish Weather Institute": weather_institute_data
