@@ -28,15 +28,29 @@ def send_weather_email(weather_data, averages, recipient_emails):
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <style>
-            body { font-family: Arial, sans-serif; }
+         <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { color: #333; }
             h2 { color: #555; margin-top: 20px; }
             table { width: 80%; border-collapse: collapse; margin-bottom: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
             th { background-color: #f2f2f2; color: #333; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             tr:hover { background-color: #ddd; }
+            /* Specific styles for averages */
+            .averages-table {
+                width: 80%;
+                margin-top: 20px;
+                border: 2px solid #007BFF; /* blue border for emphasis */
+            }
+            .averages-table th {
+                background-color: #007BFF; /* blue background for headers */
+                color: white; /* white text for headers */
+                font-weight: bold;
+            }
+            .averages-table td {
+                background-color: #E7F1FF; /* light blue background for data */
+            }
         </style>
     </head>
     <body>
@@ -100,7 +114,7 @@ def printAverages(averages, body):
     emailBody = body
     emailBody += """
     <h2>Averages:</h2>
-    <table>
+    <table class="averages-table">
     <tr>
     """
     for key in averages[0].keys():
