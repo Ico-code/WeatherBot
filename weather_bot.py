@@ -24,14 +24,46 @@ def send_weather_email(weather_data, recipient_emails):
     msg['Subject'] = "Weather Report"
 
     # Format the weather data into an HTML table
-    body = "<h2>Weather Report</h2>"
+    body = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; }
+            h1 { color: #333; }
+            h2 { color: #555; margin-top: 20px; }
+            table { width: 80%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; color: #333; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            tr:hover { background-color: #ddd; }
+        </style>
+    </head>
+    <body>
+    <h1>Weather Report</h1>
+    """
 
     for source, data in weather_data.items():
-        body += f"<h3>Source: {source}</h3>"
-        body += "<table border='1'><tr><th>Parameter</th><th>Value</th></tr>"
-        for key, value in data.items():
-            body += f"<tr><td>{key}</td><td>{value}</td></tr>"
-        body += "</table><br>"
+        body += f"<h2>Source: {source}</h2>"
+        body += "<table border='1'><tr>"
+        
+        # Add table headers from the keys of the first item in the list
+        headers = data[0].keys()
+        for key in headers:
+            body += f"<th>{key.capitalize()}</th>"
+        body += "</tr>"
+
+        # Populate the table rows with weather data
+        for city_data in data:
+            body += "<tr>"
+            for key in headers:
+                body += f"<td>{city_data[key]}</td>"
+            body += "</tr>"
+        body += "</table>"
+
+    # Close the HTML tags
+    body += "</body>"
 
     msg.attach(MIMEText(body, 'html'))  # Attach the HTML body
 
