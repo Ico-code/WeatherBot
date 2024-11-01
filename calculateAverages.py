@@ -1,34 +1,45 @@
-from openpyxl import Workbook, load_workbook
-import zipfile
+import re
 
-def combine_weather_data(data1, data2):
+def calculateAverages(weatherDataPerCity):
     """
-    Merge data from two sources, averaging numerical values where possible and 
+    Merge data from different sources, averaging numerical values where possible and 
     keeping unique values otherwise.
     """
-    combined_data = {}
+    temps = []
+    windSpeeds = []
+    weatherStates = []
 
+    for city in weatherDataPerCity:
         # Extract and convert temperatures, handling any units (like "Celsius")
-    def parse_temperature(temp_str):
-        # Remove any non-numeric parts (e.g., " Celsius") and convert to float
-        return float(temp_str.split()[0])
+        temps.append(parse_temperature(city.get("lämpötila", "0")))
+        windSpeeds.append(city.get("tuulen_nopeus", "0"))
+        weatherStates.append(city.get("säätila", "Ei tietoa"))
 
-    # Use the new helper function to parse temperatures
-    temp1 = parse_temperature(data1.get("lämpötila", "0"))
-    temp2 = parse_temperature(data2.get("lämpötila", "0"))
+    averagesInData = {
+        "kaupunki" : city["kaupunki"],
+        "Keskimääräinen lämpötila" : f"{sum(temps) / 2:.1f} Celsius",
+        "Keskimääräinen Tuulen nopeus" : f"{sum_wind_speed(windSpeeds)} m/s",
+        "Säätila" : weatherStates[1] if weatherStates is not None else "Ei tietoa",
+    }
 
-    # Average temperatures if both are available, otherwise use whichever exists
-    if temp1 and temp2:
-        combined_data["Keskimääräinen lämpötila"] = f"{(temp1 + temp2) / 2:.1f} Celsius"
-    else:
-        combined_data["lämpötila"] = data1.get("lämpötila") or data2.get("lämpötila")
+    return averagesInData
 
-    # Format wind speed to include m/s
-    wind_speed = data1.get("tuulen_nopeus") or data2.get("tuulen_nopeus")
-    if wind_speed:
-        combined_data["Tuulen nopeus"] = f"{wind_speed} m/s"
+def parse_temperature(temp_str):
+    """
+    Parses temperature data
+    """
+    # Remove any non-numeric parts (e.g., " Celsius") and convert to float
+    return float(temp_str.split()[0])
 
-    # Using Finnish weather description or OpenWeatherMap condition
-    combined_data["Säätila"] = data2.get("säätila") or data1.get("säätila")
+def sum_wind_speed(data):
+    total_speed = 0.0
+    variable = data
+    for tuulen_nopeus in data:
+        match = re.search(r"[-+]?\d*\.?\d+", tuulen_nopeus)  # Finds the first decimal or whole number in the string
+        
+        # If a number is found, convert it to float and add it to total_speed
+        if match:
+            speed = float(match.group())
+            total_speed += speed
 
-    return combined_data
+    return f"{total_speed:1.1f}"

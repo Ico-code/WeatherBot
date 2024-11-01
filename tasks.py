@@ -6,10 +6,63 @@ from dotenv import load_dotenv
 
 from weather_bot import send_weather_email, log_email_send
 from weatherInstitute import get_rounded_time, parse_weather_data
-from dataHandling import getLocationsFromExcel, getRecipienEmails
+from dataHandling import getLocationsFromExcel, getRecipienEmails, sortDataByCity
+from calculateAverages import calculateAverages
 
 # Load environment variables from .env file
 load_dotenv()
+
+@task
+def weather_task():
+    print("Starting weather task...")
+
+    # Your settings
+    api_key = os.getenv("OPENWEATHER_API_KEY")
+    # recipient_emails = ["robin.salminen@student.laurea.fi"]
+
+    #Fetches locations and recipients from an excel documents
+    excelFileEnd = ".xlsx"
+    locations = getLocationsFromExcel(f"Locations{excelFileEnd}")
+    recipient_emails = getRecipienEmails(f"Recipients{excelFileEnd}")
+
+    #defines arrays for data
+    openweather_data = [];
+    weather_institute_data = [];
+    weatherData_Averages = []
+
+    # Check if API key is set
+    if api_key is None:
+        print("Error: OPENWEATHER_API_KEY environment variable is not set.")
+
+    for location in locations:
+        # Fetch data from OpenWeatherMap
+        if api_key is not None:
+            openweather_data.append(get_weather_data(location, api_key))
+            if(openweather_data): print(openweather_data)
+
+        # Fetch data from Finnish wheatherInstitute
+        weather_institute_data.append(fetch_weather_data_from_weatherInstitute(location, retries=3))
+        if(weather_institute_data): print(weather_institute_data)
+
+    if openweather_data and weather_institute_data:
+        # Combine the data from both sources
+        combined_weather_data = {
+            "OpenWeatherMap": openweather_data,
+            "Finnish Meteorological Institute": weather_institute_data
+        }
+        sortedData = sortDataByCity(combined_weather_data)
+
+        for city in sortedData.values():
+            # Combines the data from sources
+            weatherData_Averages.append(calculateAverages(city))
+
+        # Send email with combined data
+        if send_weather_email(combined_weather_data, weatherData_Averages, recipient_emails):
+            print("Email sent and logged successfully.")  # Success message
+        else:
+            print("Failed to send email.")  # Failure message
+    else:
+        print("Failed to retrieve weather data from one or both sources.")
 
 def fetch_weather_data_from_weatherInstitute(city: str, retries: int):
     """
@@ -99,52 +152,3 @@ def get_weather_data(city, api_key):
         print(f"An error occurred: {err}")  # Log any other error
 
     return None  # Return None if an error occurs
-
-@task
-def weather_task():
-    print("Starting weather task...")
-
-    # Your settings
-    api_key = os.getenv("OPENWEATHER_API_KEY")
-    # recipient_emails = ["robin.salminen@student.laurea.fi"]
-
-    #Fetches locations and recipients from an excel documents
-    excelFileEnd = ".xlsx"
-    locations = getLocationsFromExcel(f"Locations{excelFileEnd}")
-    recipient_emails = getRecipienEmails(f"Recipients{excelFileEnd}")
-
-    #defines arrays for data
-    openweather_data = [];
-    weather_institute_data = [];
-
-    # Check if API key is set
-    if api_key is None:
-        print("Error: OPENWEATHER_API_KEY environment variable is not set.")
-
-    for location in locations:
-        # Fetch data from OpenWeatherMap
-        if api_key is not None:
-            openweather_data.append(get_weather_data(location, api_key))
-            if(openweather_data): print(openweather_data)
-
-        # Fetch data from Finnish wheatherInstitute
-        weather_institute_data.append(fetch_weather_data_from_weatherInstitute(location, retries=3))
-        if(weather_institute_data): print(weather_institute_data)
-
-    if openweather_data and weather_institute_data:
-        # Combine the data from both sources
-        combined_weather_data = combine_weather_data(openweather_data, weather_institute_data)
-
-        # Combine the data from both sources
-        combined_weather_data = {
-            "OpenWeatherMap": openweather_data,
-            "Finnish Weather Institute": weather_institute_data
-        }
-
-        # Send email with combined data
-        if send_weather_email(combined_weather_data, recipient_emails):
-            print("Email sent and logged successfully.")  # Success message
-        else:
-            print("Failed to send email.")  # Failure message
-    else:
-        print("Failed to retrieve weather data from one or both sources.")

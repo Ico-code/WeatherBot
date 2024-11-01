@@ -42,3 +42,21 @@ def getRecipienEmails(excelFileName):
 def __emptyRowSkipper(value):
     if value is None: return False;
     return True;
+
+def sortDataByCity(sources):
+    """
+    Sorts data by their city, so that the averages can be calculated for each of the cities.
+    """
+    dataSortedByCity = {}
+
+    for source in sources.values():
+        for cityData in source:
+            city_name = cityData["kaupunki"]
+            
+            # Check if the city already has an entry in the dictionary
+            if city_name in dataSortedByCity:
+                dataSortedByCity[city_name].append(cityData)
+            else:
+                dataSortedByCity[city_name] = [cityData]
+    
+    return dataSortedByCity

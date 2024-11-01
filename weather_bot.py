@@ -1,6 +1,5 @@
 import os
 import smtplib
-import json
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
@@ -11,7 +10,7 @@ import datetime
 # Load environment variables
 load_dotenv()
 
-def send_weather_email(weather_data, recipient_emails):
+def send_weather_email(weather_data, averages, recipient_emails):
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
     sender_email = os.getenv("EMAIL_ADDRESS")
@@ -43,6 +42,7 @@ def send_weather_email(weather_data, recipient_emails):
     <body>
     <h1>Weather Report</h1>
     """
+    body = printAverages(averages, body)
 
     for source, data in weather_data.items():
         body += f"<h2>Source: {source}</h2>"
@@ -95,3 +95,21 @@ def log_email_send(status="Failed", log_file="Log.xlsx"):
 
     wb.save(log_file)  # Save workbook
     print("Logged email send to Log.xlsx")
+
+def printAverages(averages, body):
+    emailBody = body
+    emailBody += """
+    <h2>Averages:</h2>
+    <table>
+    <tr>
+    """
+    for key in averages[0].keys():
+        emailBody += f"<th>{key.capitalize()}</th>"
+    emailBody += "</tr>"
+    for average in averages:
+        emailBody += "<tr>"
+        for key in average.keys():
+            emailBody += f"<td>{average[key]}</td>"
+        emailBody += "</tr>"
+    emailBody += "</table>"
+    return emailBody
