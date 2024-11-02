@@ -25,15 +25,31 @@ error_info = {
 def weather_task():
     print("Starting weather task...")
 
+    # try:
+    #     raise ValueError("Testing");
+    # except Exception as e:
+    #     error_info["errLVL"] = "High";
+    #     error_info["errMsg"] = str(e)        
+        
+    #      # Use traceback to capture the file name and line number
+    #     tb = traceback.extract_tb(e.__traceback__)
+    #     file_path, line_number = tb[-1].filename, tb[-1].lineno
+
+    #     # Extract just the file name
+    #     file_name = os.path.basename(file_path)
+    #     error_info["errLocation"] = f"{file_name}, line {line_number}"     
+        
+    #     logErrorToExcel(error_info)
+    # return;
+
     # Your settings
     api_key = os.getenv("OPENWEATHER_API_KEY")
-    # recipient_emails = ["robin.salminen@student.laurea.fi"]
 
     #Fetches locations and recipients from an excel documents
     excelFileEnd = ".xlsx"
     try:
         locations = getLocationsFromExcel(f"Locations{excelFileEnd}")
-        recipient_emails = getRecipienEmails(f"Recipients{excelFileEnd}")
+        recipient_emails = getRecipienEmails(f"Users{excelFileEnd}")
     except Exception as e:
         error_info["errLVL"] = "High";
         error_info["errMsg"] = str(e)        

@@ -1,7 +1,16 @@
 # Weather Bot
 Gathers information from a weather service and calculates averages based on the data from multiple services. The results are sent to the user via e-mail, and errors, etc. are logged in to an excel file.
 
-## Process Definition
+# Usage
+
+## Locations
+Locations are set in Locations.xlsx
+
+## Users
+Users are set in Users.xlsx
+The format is email to "Recipient List" and their role to the "Role" field, mainly "Administrator" or "Recipient"
+
+# Process Definition
 ![alt text](image.png)
 
 ## Functionalities:
