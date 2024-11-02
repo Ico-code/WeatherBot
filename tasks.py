@@ -3,14 +3,23 @@ import requests
 import datetime
 import os
 from dotenv import load_dotenv
+import traceback
 
 from weather_bot import send_weather_email, log_email_send
 from weatherInstitute import get_rounded_time, parse_weather_data
 from dataHandling import getLocationsFromExcel, getRecipienEmails, sortDataByCity
 from calculateAverages import calculateAverages
+from errorHandling import logErrorToExcel
 
 # Load environment variables from .env file
 load_dotenv()
+
+#defines error_info
+error_info = {
+    "errLVL": "Error",
+    "errLocation": "tasks.py, line 25",
+    "errMsg": "File not found",
+}
 
 @task
 def weather_task():
@@ -22,8 +31,22 @@ def weather_task():
 
     #Fetches locations and recipients from an excel documents
     excelFileEnd = ".xlsx"
-    locations = getLocationsFromExcel(f"Locations{excelFileEnd}")
-    recipient_emails = getRecipienEmails(f"Recipients{excelFileEnd}")
+    try:
+        locations = getLocationsFromExcel(f"Locations{excelFileEnd}")
+        recipient_emails = getRecipienEmails(f"Recipients{excelFileEnd}")
+    except Exception as e:
+        error_info["errLVL"] = "High";
+        error_info["errMsg"] = str(e)        
+        
+         # Use traceback to capture the file name and line number
+        tb = traceback.extract_tb(e.__traceback__)
+        file_path, line_number = tb[-1].filename, tb[-1].lineno
+
+        # Extract just the file name
+        file_name = os.path.basename(file_path)
+        error_info["errLocation"] = f"{file_name}, line {line_number}"     
+        
+        logErrorToExcel(error_info)
 
     #defines arrays for data
     openweather_data = [];
@@ -33,16 +56,18 @@ def weather_task():
     # Check if API key is set
     if api_key is None:
         print("Error: OPENWEATHER_API_KEY environment variable is not set.")
+        error_info["errLVL"] = "High";
+        error_info["errMsg"] = "Error: OPENWEATHER_API_KEY environment variable is not set.";
+        error_info["errLocation"] = "tasks.py, line 55";
+        logErrorToExcel(error_info)
 
     for location in locations:
         # Fetch data from OpenWeatherMap
         if api_key is not None:
             openweather_data.append(get_weather_data(location, api_key))
-            if(openweather_data): print(openweather_data)
 
         # Fetch data from Finnish wheatherInstitute
         weather_institute_data.append(fetch_weather_data_from_weatherInstitute(location, retries=3))
-        if(weather_institute_data): print(weather_institute_data)
 
     if openweather_data and weather_institute_data:
         # Combine the data from both sources
@@ -61,8 +86,16 @@ def weather_task():
             print("Email sent and logged successfully.")  # Success message
         else:
             print("Failed to send email.")  # Failure message
+            error_info["errLVL"] = "Medium";
+            error_info["errMsg"] = "Failed to send email";
+            error_info["errLocation"] = "tasks.py, line 81";
+            logErrorToExcel(error_info)
     else:
         print("Failed to retrieve weather data from one or both sources.")
+        error_info["errLVL"] = "Medium";
+        error_info["errMsg"] = "Failed to retrieve weather data from one or both sources.";
+        error_info["errLocation"] = "tasks.py, line 61";
+        logErrorToExcel(error_info)
 
 def fetch_weather_data_from_weatherInstitute(city: str, retries: int):
     """
