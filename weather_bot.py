@@ -87,25 +87,25 @@ def send_weather_email(weather_data, averages, recipient_emails):
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, recipient_emails, msg.as_string())
         print("Email sent successfully.")
-        log_email_send("Success")  # Log success if email is sent
+        log_email_send("Success", body)  # Log success if email is sent
         return True
     except Exception as e:
         print(f"Failed to send email: {e}")
-        log_email_send("Failed")  # Log failure if email is not sent
+        log_email_send("Failed", body)  # Log failure if email is not sent
         return False
 
-def log_email_send(status="Failed", log_file="Log.xlsx"):
+def log_email_send(status="Failed", message="email message that was sent", log_file="Log.xlsx"):
     try:
         wb = load_workbook(log_file)  # Attempt to load existing workbook
         sheet = wb.active
     except (FileNotFoundError, zipfile.BadZipFile):  # Handle both file not found and bad zip file
         wb = Workbook()  # Create a new workbook
         sheet = wb.active
-        sheet.append(["Timestamp", "Status"])  # Add headers
+        sheet.append(["Timestamp", "Status", "Message"])  # Add headers
 
     # Append log entry
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    sheet.append([timestamp, status])  # Log the email send status
+    sheet.append([timestamp, status, message])  # Log the email send status
 
     wb.save(log_file)  # Save workbook
     print("Logged email send to Log.xlsx")

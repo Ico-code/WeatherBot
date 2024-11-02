@@ -43,3 +43,8 @@ def logErrorToExcel(error_details={"errMsg":"api key is empty","errLVL":"medium"
 
     # Save the workbook
     workbook.save(errorLogFilePath)
+
+    notifyAdministrator()
+
+def notifyAdministrator():
+    print("Notifying...")
