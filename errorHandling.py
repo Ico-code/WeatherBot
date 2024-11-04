@@ -11,7 +11,42 @@ from weather_bot import log_email_send
 
 errorLogFilePath = "error_log.xlsx";
 
-def logErrorToExcel(error_details={"errMsg":"api key is empty","errLVL":"medium", "errLocation":"tasks.py"}):
+#defines error_info
+error_info = {
+    "errLVL": "Error",
+    "errLocation": "tasks.py, line 25",
+    "errMsg": "File not found",
+}
+
+
+def reportErrorData(errorLVL,error,tb):
+    """
+        Used for logging errors in the application
+
+        Parameters:
+            errorLVL:
+                Should be a string that indicates how critical an error is
+            error:
+                should be the error object that containes the error message, can also be a string containing the error message
+            tb:
+                TB is used for getting information on where the error occured. This is what should be given to this part excluding the quotation marks(""), "traceback.extract_tb(e.__traceback__)"
+    """
+    error_info["errLVL"] = str(errorLVL);
+    error_info["errMsg"] = str(error)        
+    
+    if(isinstance(tb,str)):
+        error_info["errLocation"] = tb;
+    else:
+        # Use traceback to capture the file name and line number
+        file_path, line_number = tb[-1].filename, tb[-1].lineno
+
+        # Extract just the file name
+        file_name = os.path.basename(file_path)
+        error_info["errLocation"] = f"{file_name}, line {line_number}"     
+            
+    __logErrorToExcel(error_info)
+
+def __logErrorToExcel(error_details={"errMsg":"No message defined","errLVL":"unknown", "errLocation":"unknown file and row"}):
     """
     Write error message in error_log.xlsx
     Parameters:
@@ -99,12 +134,12 @@ def logErrorToExcel(error_details={"errMsg":"api key is empty","errLVL":"medium"
     </body>
     </html>
     """
-    notifyAdministrator(errorContent)
+    __notifyAdministrator(errorContent)
 
-def notifyAdministrator(body):
+def __notifyAdministrator(body):
     print("Notifying...")
 
-    recipient_emails = getAdministrators();
+    recipient_emails = __getAdministrators();
 
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
@@ -128,7 +163,7 @@ def notifyAdministrator(body):
         print(f"Failed to send email: {e}")
         log_email_send("Failed", body)  # Log failure if email is not sent
     
-def getAdministrators():
+def __getAdministrators():
     """
     Gets a list of all administrator emails
     """
