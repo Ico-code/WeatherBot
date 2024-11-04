@@ -9,6 +9,11 @@ from dotenv import load_dotenv
 
 from weather_bot import log_email_send
 
+load_dotenv()
+
+#Default admins
+defaultAdmins = os.getenv("DEFAULT_ADMINS")
+
 errorLogFilePath = "error_log.xlsx";
 
 #defines error_info
@@ -139,45 +144,81 @@ def __logErrorToExcel(error_details={"errMsg":"No message defined","errLVL":"unk
 def __notifyAdministrator(body):
     print("Notifying...")
 
-    recipient_emails = __getAdministrators();
+    admin_emails = __getAdministrators();
 
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
     sender_email = os.getenv("EMAIL_ADDRESS")
     sender_password = os.getenv("EMAIL_PASSWORD")
 
+
+    if admin_emails is []:
+        admin_emails = defaultAdmins
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = ", ".join(admin_emails)
+        msg['Subject'] = "No administrators found in Users.xlsx"
+        body = "The Users.xlsx file does not contain any administrators. Default administrators have been notified."
+        msg.attach(MIMEText(body, 'plain'))
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()  # Secure the connection
+                server.login(sender_email, sender_password)
+                server.sendmail(sender_email, admin_emails, msg.as_string())
+            print("Email sent successfully.")
+            log_email_send("Success", body)  # Log success if email is sent
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+            log_email_send("Failed", body)  # Log failure if email is not sent
+
     # Compose the email
     msg = MIMEMultipart()
     msg['From'] = sender_email
-    msg['To'] = ", ".join(recipient_emails)
+    msg['To'] = ", ".join(admin_emails)
     msg['Subject'] = "There has been an error, while making Weather Report"
     msg.attach(MIMEText(body, 'html'))
     try:
         with smtplib.SMTP(smtp_server, smtp_port) as server:
             server.starttls()  # Secure the connection
             server.login(sender_email, sender_password)
-            server.sendmail(sender_email, recipient_emails, msg.as_string())
+            server.sendmail(sender_email, admin_emails, msg.as_string())
         print("Email sent successfully.")
         log_email_send("Success", body)  # Log success if email is sent
     except Exception as e:
         print(f"Failed to send email: {e}")
         log_email_send("Failed", body)  # Log failure if email is not sent
-    
+
 def __getAdministrators():
     """
     Gets a list of all administrator emails
     """
     print("Getting administrators...")
 
-    df = pandas.read_excel("Users.xlsx")
-    
-    # Check the columns (for reference)
-    print("Columns in the file:", df.columns)
+    try:
+            # Read the Excel file into a DataFrame
+            df = pandas.read_excel("Users.xlsx")
+            
+            # Check the columns (for reference)
+            print("Columns in the file:", df.columns.tolist())
 
-    # Filter rows where the Role is "administrator"
-    admins = df[df["Role"].str.lower() == "administrator"]
-    
-    # Extract the email addresses
-    admin_emails = admins["User List"].tolist()
-    
-    return admin_emails
+            # Filter rows where the Role is "administrator" (case insensitive)
+            admins = df[df["Role"].str.lower() == "administrator"]
+
+            # Extract the email addresses from the filtered DataFrame
+            admin_emails = admins["User List"].tolist()
+
+            # Check if any administrators were found
+            if not admin_emails:
+                print("No administrators found.")
+            
+            return admin_emails
+
+    except FileNotFoundError:
+        print("Error: 'Users.xlsx' file not found.")
+        return []
+    except KeyError as e:
+        print(f"Error: Missing expected column in the spreadsheet: {e}")
+        return []
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return []
