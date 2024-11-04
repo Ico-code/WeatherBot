@@ -94,7 +94,7 @@ def send_weather_email(weather_data, averages, recipient_emails):
         log_email_send("Failed", body)  # Log failure if email is not sent
         return False
 
-def log_email_send(status="Failed", message="email message that was sent", log_file="Log.xlsx"):
+def log_email_send(status="Failed", message="message that was sent, by email", log_file="Log.xlsx"):
     try:
         wb = load_workbook(log_file)  # Attempt to load existing workbook
         sheet = wb.active

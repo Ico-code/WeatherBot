@@ -19,7 +19,7 @@ def calculateAverages(weatherDataPerCity):
         "kaupunki" : city["kaupunki"],
         "Keskimääräinen lämpötila" : f"{sum(temps) / 2:.1f} Celsius",
         "Keskimääräinen Tuulen nopeus" : f"{sum_wind_speed(windSpeeds)} m/s",
-        "Säätila" : weatherStates[1] if weatherStates is not None else "Ei tietoa",
+        "Säätila" : weatherStates[1] if weatherStates is not None else "Unknown",
     }
 
     return averagesInData
@@ -29,7 +29,10 @@ def parse_temperature(temp_str):
     Parses temperature data
     """
     # Remove any non-numeric parts (e.g., " Celsius") and convert to float
-    return float(temp_str.split()[0])
+    try:
+        return float(temp_str.split()[0])  # Extract numerical part if formatted like "20 Celsius"
+    except (ValueError, IndexError):
+        return None
 
 def sum_wind_speed(data):
     total_speed = 0.0

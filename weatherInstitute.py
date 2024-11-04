@@ -5,7 +5,6 @@ def get_rounded_time():
     """
     Gets the nearest 10-minute interval for fetching data from the finish weather institutes API
     """
-
     # Gets the current UTC time and rounds it down to the nearest 10-minute interval
     now = datetime.datetime.now(datetime.timezone.utc)
     rounded_minute = (now.minute // 10) * 10
@@ -16,7 +15,6 @@ def parse_weather_data(xml_data, location):
     """
     Parses XMl data from the request made to the finish weather insitute
     """
-
     # wawa-koodien sanakirja säätilojen kuvausten kanssa
     wawa_mapping = {
         0: "Ei merkittäviä sääilmiöitä",
