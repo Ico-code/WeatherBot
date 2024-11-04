@@ -30,8 +30,8 @@ def weather_task():
     #Fetches locations and recipients from an excel documents
     excelFileEnd = ".xlsx"
     try:
-        locations = getLocationsFromExcel(f"Locations{excelFileEnd}")
-        recipient_emails = getRecipienEmails(f"Users{excelFileEnd}")
+        locations = getLocationsFromExcel(f"Locations{excelFileEnd}",["Helsinki", "Espoo", "Vantaa"])
+        recipient_emails = getRecipienEmails(f"Users{excelFileEnd}",["nico.viljanen@student.laurea.fi"])
     except Exception as e:
         reportErrorData("High", e, traceback.extract_tb(e.__traceback__))
 
@@ -121,7 +121,10 @@ def fetch_weather_data_from_weatherInstitute(city: str, retries: int):
             
             # If the response is successful (status code 200), parses and returns the data
             if response.status_code == 200:
-                return parse_weather_data(response.text,city)
+                try: 
+                    return parse_weather_data(response.text,city)
+                except:
+                    reportErrorData("High", e, traceback.extract_tb(e.__traceback__))
             else:
                 print(f"Attempt {attempt + 1} failed with status code: {response.status_code}")
         
