@@ -22,33 +22,7 @@ def weather_task():
     # Define the interval in minutes for testing or production use
     interval_minutes = 1  # Set to your desired interval (e.g., 60 minutes)
 
-<<<<<<< HEAD
     while True:
-=======
-    # Your settings
-    api_key = os.getenv("OPENWEATHER_API_KEY")
-    
-    #Fetches locations and recipients from an excel documents
-    excelFileEnd = ".xlsx"
-    try:
-        locations = getLocationsFromExcel(f"Locations{excelFileEnd}",["Helsinki", "Espoo", "Vantaa"])
-        recipient_emails = getRecipienEmails(f"Users{excelFileEnd}",["nico.viljanen@student.laurea.fi"])
-    except Exception as e:
-        reportErrorData("High", e, traceback.extract_tb(e.__traceback__))
-
-    #defines arrays for data
-    openweather_data = [];
-    weather_institute_data = [];
-    weatherData_Averages = []
-
-    # Check if API key is set
-    if api_key is None:
-        print("Error: OPENWEATHER_API_KEY environment variable is not set.")
-        reportErrorData("High",e,"tasks.py, line 55")
-        return;
-
-    for location in locations:
->>>>>>> b3c9b71 (error situation handling is better in dataHandling.py)
         try:
             # Load API key and other settings
             api_key = os.getenv("OPENWEATHER_API_KEY")
