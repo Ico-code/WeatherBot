@@ -22,6 +22,12 @@ def weather_task():
     # Define the interval in minutes for testing or production use
     interval_minutes = 1  # Set to your desired interval (e.g., 60 minutes)
 
+    # try:
+    #     raise ValueError("Testing!!!");
+    # except Exception as e:
+    #     reportErrorData("High", e, traceback.extract_tb(e.__traceback__))
+    # return
+
     while True:
         try:
             # Load API key and other settings
