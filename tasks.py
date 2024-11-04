@@ -26,7 +26,7 @@ def weather_task():
 
     # Your settings
     api_key = os.getenv("OPENWEATHER_API_KEY")
-
+    
     #Fetches locations and recipients from an excel documents
     excelFileEnd = ".xlsx"
     try:
