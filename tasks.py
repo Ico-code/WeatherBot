@@ -20,7 +20,7 @@ def weather_task():
     print("Starting weather task...")
 
     # Define the interval in minutes for testing or production use
-    interval_minutes = 60  # Set to your desired interval (e.g., 60 minutes)
+    interval_minutes = 1  # Set to your desired interval (e.g., 60 minutes)
 
     while True:
         try:
