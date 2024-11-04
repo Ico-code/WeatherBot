@@ -31,7 +31,7 @@ def weather_task():
             
             # Fetch locations and recipient emails from Excel files
             excelFileEnd = ".xlsx"
-            locations = getLocationsFromExcel(f"Locations{excelFileEnd}")
+            locations = getLocationsFromExcel(f"Locations{excelFileEnd}", ["Helsinki,Espoo,Vantaa"])
             recipient_emails = getRecipienEmails(f"Users{excelFileEnd}")
 
             # Initialize data containers
